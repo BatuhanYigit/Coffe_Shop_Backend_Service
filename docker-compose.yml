@@ -1,0 +1,13 @@
+version: '3'
+services:
+
+  db:
+    image: postgres
+    env_file: /home/batuhan/Documents/GitHub/test-sql-repo-postgres/local.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresqltest/data/
+
+volumes:
+  postgres_data:
