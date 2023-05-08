@@ -9,5 +9,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresqltest/data/
 
+  coffe-shop-service:
+    container_name: coffe-shop-backend-service
+    build: .
+    env_file: /home/batuhan/Documents/GitHub/test-sql-repo-postgres/local.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - TZ=Europe/Istanbul
+
 volumes:
   postgres_data:
