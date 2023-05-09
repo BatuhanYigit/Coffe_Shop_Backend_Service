@@ -92,6 +92,35 @@ class Address_Create(BaseModel):
     userid: int
 
 
+def item_price(id, data, index_df):
+    for i in index_df:
+        # print(f"for döngüsü {i} ")
+        syrup_price = data.iloc[i]['syrup_price']
+        # print(syrup_price)
+        item_price = data.iloc[i]['price']
+        # print(item_price)
+        size_price = data.iloc[i]['size_price']
+        # print(size_price)
+        sugar_price = data.iloc[i]['sugar_price']
+        # print(sugar_price)
+        milk_price = data.iloc[i]['milk_price']
+        # print(milk_price)
+        item_total_id = data.iloc[i]['id']
+        total_price = syrup_price+item_price+size_price+sugar_price+milk_price
+        # print(total_price)
+        check_total_price(item_total_id, total_price)
+
+
+def basket_total_price(data, index_df):
+    for i in index_df:
+        a_total_price = data.iloc[i]['totalprice']
+
+        if i == i:
+            b_total_price = data.iloc[i]['totalprice']
+            toplam = a_total_price + b_total_price
+            print("toplam sooooooooooooooon", toplam)
+
+
 def check_total_price(id, totalprice):
     cur = conn.cursor()
     info = {
@@ -99,6 +128,7 @@ def check_total_price(id, totalprice):
         "totalprice": totalprice
     }
     cur.execute(sqlquery.total_price.format(**info))
+    conn.commit()
 
 
 def create_date():
@@ -160,18 +190,17 @@ async def basket_detail_get(id=int):
     info = {
         "basket_id": id,
     }
+
     data = pd.read_sql_query(sqlquery.get_basket_detail.format(**info), conn)
 
-    print(data.to_dict("records"))
-    syrup_price = data.iloc[0]['syrup_price']
-    item_price = data.iloc[0]['price']
-    size_price = data.iloc[0]['size_price']
-    sugar_price = data.iloc[0]['sugar_price']
-    total_price = syrup_price+item_price+size_price+sugar_price
-    check_total_price(id, total_price)
+    index_df = data.index.values
 
-    print("typeeeeeee : ", data.iloc[0]['syrup_price'])
-    print("aaaaaaaaaaaaaa", type(data))
+    item_price(id, data, index_df)
+
+    basket_total_price(data, index_df)
+
+    print(data)
+
     return JSONResponse(
         content={
             "data": data.to_dict("records"),
@@ -235,7 +264,6 @@ async def get_item():
     )
 
 
-@ app.post("/c")
 @ app.post("/orders")
 async def orders(orders_create: Orders_Create):
     try:
