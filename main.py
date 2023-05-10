@@ -92,12 +92,25 @@ class Address_Create(BaseModel):
     userid: int
 
 
+class Create_Basket(BaseModel):
+    basket_id: int
+    user_id: str
+    create_date: str
+    item_count: int
+    item_id: int
+    amount: int
+    sugar_id: int
+    milk_id: int
+    syrup_id: int
+    size_id: int
+
+
 def item_price(id, data, index_df):
     for i in index_df:
         # print(f"for döngüsü {i} ")
         syrup_price = data.iloc[i]['syrup_price']
         # print(syrup_price)
-        item_price = data.iloc[i]['price']
+        item_price = data.iloc[i]['item_price']
         # print(item_price)
         size_price = data.iloc[i]['size_price']
         # print(size_price)
@@ -111,14 +124,19 @@ def item_price(id, data, index_df):
         check_total_price(item_total_id, total_price)
 
 
-def basket_total_price(data, index_df):
+def basket_total_price(id, data, index_df):
+    cur = conn.cursor()
+    sum = 0
     for i in index_df:
-        a_total_price = data.iloc[i]['totalprice']
+        total_price = data.iloc[i]['totalprice']
+        sum = total_price + sum
+    info = {
+        "basket_id": id,
+        "total_price": sum
 
-        if i == i:
-            b_total_price = data.iloc[i]['totalprice']
-            toplam = a_total_price + b_total_price
-            print("toplam sooooooooooooooon", toplam)
+    }
+    cur.execute(sqlquery.set_basket_total_price.format(**info))
+    conn.commit()
 
 
 def check_total_price(id, totalprice):
@@ -192,14 +210,10 @@ async def basket_detail_get(id=int):
     }
 
     data = pd.read_sql_query(sqlquery.get_basket_detail.format(**info), conn)
-
     index_df = data.index.values
 
     item_price(id, data, index_df)
-
-    basket_total_price(data, index_df)
-
-    print(data)
+    basket_total_price(id, data, index_df)
 
     return JSONResponse(
         content={
@@ -283,3 +297,43 @@ async def orders(orders_create: Orders_Create):
     except:
         print(create_date())
         return "Hata oluştu", status.HTTP_400_BAD_REQUEST
+
+
+@app.post("/create-basket")
+async def create_basket(create_basket: Create_Basket):
+    cur = conn.cursor()
+    user_id = create_basket.user_id
+    create_date = create_basket.create_date
+    item_count = create_basket.item_count
+    item_id = create_basket.item_id
+    amount = create_basket.amount
+    sugar_id = create_basket.sugar_id
+    milk_id = create_basket.milk_id
+    syrup_id = create_basket.syrup_id
+    size_id = create_basket.size_id
+    basket_id = create_basket.basket_id
+
+    info_basket = {
+        "user_id": user_id,
+        "create_date": create_date,
+        "item_count": item_count
+    }
+
+    cur.execute(sqlquery.set_basket.format(**info_basket))
+    conn.commit()
+
+    # basket_id = pd.read_sql_query(
+    #     "select id from basket where user_id = {} ".format(user_id), conn)
+
+    info_basket_detail = {
+        "basket_id": basket_id,
+        "item_id": item_id,
+        "amount": amount,
+        "sugar_id": sugar_id,
+        "milk_id": milk_id,
+        "syrup_id": syrup_id,
+        "size_id": size_id
+    }
+
+    cur.execute(sqlquery.set_basket_detail.format(**info_basket_detail))
+    conn.commit

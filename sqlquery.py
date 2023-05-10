@@ -17,7 +17,7 @@ orders_create = """INSERT INTO orders (email,orders,order_date) VALUES ('{email}
 
 getproducts_sql = """SELECT * FROM product"""
 
-item_create = """INSERT INTO item (item_code,item_name,price) VALUES ('{itemcode}','{itemname}', '{price}')"""
+item_create = """INSERT INTO item (item_code,item_name,item_price) VALUES ('{itemcode}','{itemname}', '{price}')"""
 
 country_create = """INSERT INTO country (country) VALUES ('{country}')"""
 
@@ -34,7 +34,7 @@ join city c on c.id = a.city_id
 join district d on d.id=district_id
 where u.id={userid}"""
 
-get_basket_detail = """select bd.basket_id,bd.totalprice,i.item_name,i.price,s.sugar_type,s.sugar_price,m.milk_type,m.milk_price,sy.syrup_type,sy.syrup_price,sz.size,sz.size_price,bd.id
+get_basket_detail = """select bd.basket_id,bd.totalprice,i.item_name,i.item_price,s.sugar_type,s.sugar_price,m.milk_type,m.milk_price,sy.syrup_type,sy.syrup_price,sz.size,sz.size_price,bd.id
 from basketdetail bd
 right join item i  on i.id=bd.item_id
 right join milk m on m.id = bd.milk_id
@@ -47,4 +47,19 @@ get_item = """SELECT * FROM item"""
 
 total_price = """UPDATE basketdetail SET totalprice = {totalprice} WHERE id = {basket_id} """
 
-set_basket_total_price = """UPDATE basket SET totalprice = {totalprice} WHERE id = {basket_id} """
+set_basket_total_price = """UPDATE basket SET totalprice = {total_price} WHERE id = {basket_id} """
+
+get_basket_price = """select bd.basket_id,bd.totalprice,i.item_name,i.item_price,s.sugar_type,s.sugar_price,m.milk_type,m.milk_price,sy.syrup_type,sy.syrup_price,sz.size,sz.size_price,bd.id
+from basketdetail bd
+right join item i  on i.id=bd.item_id
+right join milk m on m.id = bd.milk_id
+right join syrup sy on sy.id = bd.syrup_id
+right join  sugar s on s.id = bd.sugar_id
+right join size sz on sz.id = bd.size_id
+where bd.basket_id={basket_id}"""
+
+set_basket = """INSERT INTO basket (user_id,created_date,item_count) VALUES ('{user_id}','{create_date}','{item_count}')"""
+
+set_basket_detail = """INSERT INTO basketdetail (basket_id,item_id,amount,sugar_id,milk_id,syrup_id,size_id) VALUES ('{basket_id}','{item_id}','{amount}','{sugar_id}','{milk_id}','{syrup_id}','{size_id}')"""
+
+select_id_basket = """select id from basket where user_id = {user_id}"""
