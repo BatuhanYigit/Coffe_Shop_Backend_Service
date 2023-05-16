@@ -264,6 +264,48 @@ async def item_create(item_create: Item_Create):
     return "Ürün oluşturuldu"
 
 
+@ app.get("/syrup")
+async def get_item():
+    data = pd.read_sql_query("SELECT * FROM syrup", conn)
+
+    return JSONResponse(
+
+        content={
+            "data": data.to_dict("records"),
+            "success": True
+        }
+
+    )
+
+
+@ app.get("/sugar")
+async def get_item():
+    data = pd.read_sql_query("SELECT * FROM sugar", conn)
+
+    return JSONResponse(
+
+        content={
+            "data": data.to_dict("records"),
+            "success": True
+        }
+
+    )
+
+
+@ app.get("/size")
+async def get_item():
+    data = pd.read_sql_query("SELECT * FROM size", conn)
+
+    return JSONResponse(
+
+        content={
+            "data": data.to_dict("records"),
+            "success": True
+        }
+
+    )
+
+
 @ app.get("/item")
 async def get_item():
     data = pd.read_sql_query("SELECT * FROM item", conn)
