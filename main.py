@@ -100,9 +100,23 @@ class Create_Basket(BaseModel):
     item_id: int
     amount: int
     sugar_id: int
-    milk_id: int
     syrup_id: int
     size_id: int
+
+
+class Create_Syrup(BaseModel):
+    syrup_type: str
+    syrup_price: int
+
+
+class Create_Size(BaseModel):
+    size: str
+    size_price: int
+
+
+class Create_Sugar(BaseModel):
+    sugar_type: str
+    sugar_price: int
 
 
 def item_price(id, data, index_df):
@@ -116,10 +130,9 @@ def item_price(id, data, index_df):
         # print(size_price)
         sugar_price = data.iloc[i]['sugar_price']
         # print(sugar_price)
-        milk_price = data.iloc[i]['milk_price']
         # print(milk_price)
         item_total_id = data.iloc[i]['id']
-        total_price = syrup_price+item_price+size_price+sugar_price+milk_price
+        total_price = syrup_price+item_price+size_price+sugar_price
         # print(total_price)
         check_total_price(item_total_id, total_price)
 
@@ -152,6 +165,48 @@ def check_total_price(id, totalprice):
 def create_date():
     date = datetime.datetime.today()
     return date
+
+
+@app.post("/create-syrup")
+async def create_syrup(create_syrup: Create_Syrup):
+    cur = conn.cursor()
+    syrup = create_syrup.syrup_type
+    syrup_price = create_syrup.syrup_price
+    info = {
+        "syrup": syrup,
+        "syrup_price": syrup_price
+    }
+    cur.execute(sqlquery.syrup_create.format(**info))
+    conn.commit()
+    return "Şurup Girilmiştir"
+
+
+@app.post("/create-size")
+async def create_size(create_size: Create_Size):
+    cur = conn.cursor()
+    size = create_size.size
+    size_price = create_size.size_price
+    info = {
+        "size": size,
+        "size_price": size_price
+    }
+    cur.execute(sqlquery.size_create.format(**info))
+    conn.commit()
+    return "Boyut Girilmiştir"
+
+
+@app.post("/create-sugar")
+async def create_sugar(create_sugar: Create_Sugar):
+    cur = conn.cursor()
+    sugar = create_sugar.sugar_type
+    sugar_price = create_sugar.sugar_price
+    info = {
+        "sugar": sugar,
+        "sugar_price": sugar_price
+    }
+    cur.execute(sqlquery.sugar_create.format(**info))
+    conn.commit()
+    return "Boyut Girilmiştir"
 
 
 @app.post("/district-create")
@@ -204,7 +259,7 @@ async def address_get(id=int):
 
 
 @app.get("/basket-detail-get/{id}")
-async def basket_detail_get(id=int):
+async def basket_detail_get(id=str):
     info = {
         "basket_id": id,
     }
@@ -213,7 +268,7 @@ async def basket_detail_get(id=int):
     index_df = data.index.values
 
     item_price(id, data, index_df)
-    basket_total_price(id, data, index_df)
+    # basket_total_price(id, data, index_df)
 
     return JSONResponse(
         content={
@@ -350,7 +405,6 @@ async def create_basket(create_basket: Create_Basket):
     item_id = create_basket.item_id
     amount = create_basket.amount
     sugar_id = create_basket.sugar_id
-    milk_id = create_basket.milk_id
     syrup_id = create_basket.syrup_id
     size_id = create_basket.size_id
     basket_id = create_basket.basket_id
@@ -372,10 +426,41 @@ async def create_basket(create_basket: Create_Basket):
         "item_id": item_id,
         "amount": amount,
         "sugar_id": sugar_id,
-        "milk_id": milk_id,
         "syrup_id": syrup_id,
         "size_id": size_id
     }
 
     cur.execute(sqlquery.set_basket_detail.format(**info_basket_detail))
     conn.commit
+
+
+@app.post("/json-test/{basketId}")
+async def jsontest(info: Request, basketId=str):
+
+    cur = conn.cursor()
+    req_info = await info.json()
+    print("Basket IIIIIIIIID", basketId),
+
+    print(req_info['dataCart'], "Deneme data cart")
+    print(req_info, "Address Detail")
+    print(len(req_info))
+    print(req_info['address_detail']['name'])
+    print(req_info['address_detail']['surname'])
+    name = req_info['address_detail']['name']
+    surname = req_info['address_detail']['surname']
+    address_name = req_info['address_detail']['address_name']
+    email = req_info['address_detail']['email']
+    phone = req_info['address_detail']['phone']
+    address_detail = req_info['address_detail']['address_detail']
+    for data in req_info['dataCart']:
+
+        cur.execute(sqlquery.set_basket_detail.format(
+            **data, **{"basketid": basketId, "name": name, "surname": surname, "address_name": address_name, "email": email, "phone": phone, "address_detail": address_detail}))
+        conn.commit()
+
+    return {
+        "status": "SUCCESS",
+        "data": req_info,
+        "denemeeeeeeee": "denemeee"
+
+    }
