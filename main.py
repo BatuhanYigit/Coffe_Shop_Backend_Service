@@ -249,7 +249,7 @@ async def address_get(id=int):
         "userid": id
     }
     data = pd.read_sql_query(sqlquery.get_address.format(**info), conn)
-    print(data.to_dict("records"))
+
     return JSONResponse(
         content={
             "data": data.to_dict("records"),
@@ -313,7 +313,6 @@ async def item_create(item_create: Item_Create):
         "itemname": itemname,
         "price": price
     }
-    print(itemcode)
     cur.execute(sqlquery.item_create.format(**info))
     conn.commit()
     return "Ürün oluşturuldu"
@@ -392,7 +391,6 @@ async def orders(orders_create: Orders_Create):
         # order_results = cur.fetchall()
         return "Sipariş Oluşturuldu"
     except:
-        print(create_date())
         return "Hata oluştu", status.HTTP_400_BAD_REQUEST
 
 
@@ -434,33 +432,38 @@ async def create_basket(create_basket: Create_Basket):
     conn.commit
 
 
-@app.post("/json-test/{basketId}")
-async def jsontest(info: Request, basketId=str):
+@app.post("/payment/{basketId}")
+async def payment(info: Request, basketId=str):
 
     cur = conn.cursor()
     req_info = await info.json()
-    print("Basket IIIIIIIIID", basketId),
-
-    print(req_info['dataCart'], "Deneme data cart")
-    print(req_info, "Address Detail")
-    print(len(req_info))
-    print(req_info['address_detail']['name'])
-    print(req_info['address_detail']['surname'])
     name = req_info['address_detail']['name']
     surname = req_info['address_detail']['surname']
     address_name = req_info['address_detail']['address_name']
     email = req_info['address_detail']['email']
     phone = req_info['address_detail']['phone']
     address_detail = req_info['address_detail']['address_detail']
+
+    date = create_date()
+    print("dateeeeeeee", date)
+
     for data in req_info['dataCart']:
 
         cur.execute(sqlquery.set_basket_detail.format(
-            **data, **{"basketid": basketId, "name": name, "surname": surname, "address_name": address_name, "email": email, "phone": phone, "address_detail": address_detail}))
+            **data, **{"basketid": basketId, "name": name, "surname": surname, "address_name": address_name, "email": email, "phone": phone, "address_detail": address_detail, "date_": date}))
         conn.commit()
+    data = pd.read_sql_query(sqlquery.get_basket_detail.format(
+        **{"basket_id": basketId}), conn)
+    index_df = data.index.values
+    item_price(basketId, data, index_df)
 
-    return {
-        "status": "SUCCESS",
-        "data": req_info,
-        "denemeeeeeeee": "denemeee"
+    return JSONResponse(
+        content={
+            "status": "SUCCESS",
+            "data": req_info,
 
-    }
+        },
+        status_code=status.HTTP_200_OK
+
+
+    )

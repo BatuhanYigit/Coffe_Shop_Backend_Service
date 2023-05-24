@@ -66,6 +66,6 @@ where bd.basket_id='{basket_id}'"""
 
 set_basket = """INSERT INTO basket (user_id,created_date,item_count) VALUES ('{user_id}','{create_date}','{item_count}')"""
 
-set_basket_detail = """INSERT INTO basketdetail (basket_id,item_id,amount,sugar_id,syrup_id,size_id,name,surname,address_name,email,phone,address_detail) VALUES ('{basketid}',{id},{item_price},{sugar},{syrup},{size},'{name}','{surname}','{address_name}','{email}','{phone}','{address_detail}')"""
+set_basket_detail = """INSERT INTO basketdetail (basket_id,item_id,amount,sugar_id,syrup_id,size_id,name,surname,address_name,email,phone,address_detail,date_) VALUES ('{basketid}',{id},{item_price},{sugar},{syrup},{size},'{name}','{surname}','{address_name}','{email}','{phone}','{address_detail}','{date_}')"""
 
 select_id_basket = """select id from basket where user_id = {user_id}"""
